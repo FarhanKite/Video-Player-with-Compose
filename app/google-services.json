@@ -1,0 +1,87 @@
+{
+  "project_info": {
+    "project_number": "707695275765",
+    "firebase_url": "https://video-player-app-e31b0-default-rtdb.firebaseio.com",
+    "project_id": "video-player-app-e31b0",
+    "storage_bucket": "video-player-app-e31b0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:707695275765:android:fc64f023025ff0a90e5fbc",
+        "android_client_info": {
+          "package_name": "com.example.simpleyoutube"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCSXgg3UX8S8Cp1NrMizGcYWuOIAj2Upbo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:707695275765:android:b970c8433445fb440e5fbc",
+        "android_client_info": {
+          "package_name": "com.raywenderlich.videoplayerapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCSXgg3UX8S8Cp1NrMizGcYWuOIAj2Upbo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:707695275765:android:fcdbe77f556d40080e5fbc",
+        "android_client_info": {
+          "package_name": "com.raywenderlich.videoplayerappwithcompose"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCSXgg3UX8S8Cp1NrMizGcYWuOIAj2Upbo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:707695275765:android:fce656e77d14c28f0e5fbc",
+        "android_client_info": {
+          "package_name": "com.raywenderlich.videoplayercompose02"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCSXgg3UX8S8Cp1NrMizGcYWuOIAj2Upbo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
