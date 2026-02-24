@@ -51,11 +51,25 @@ fun SimpleYouTubeApp() {
             modifier = Modifier.padding(paddingValues)
         ) {
             composable("home") {
-                HomeScreen()
+                HomeScreen(
+                    onNavigateToShorts = { shortId ->
+                        navController.navigate("shorts?shortId=$shortId")
+                    }
+                )
             }
 
-            composable("shorts") {
-                ShortsScreen()
+            composable(
+                route = "shorts?shortId={shortId}",
+                arguments = listOf(
+                    androidx.navigation.navArgument("shortId") {
+                        type = androidx.navigation.NavType.StringType
+                        nullable = true
+                        defaultValue = null
+                    }
+                )
+            ) { backStackEntry ->
+                val shortId = backStackEntry.arguments?.getString("shortId")
+                ShortsScreen(initialShortId = shortId)
             }
 
             composable("subscriptions") {

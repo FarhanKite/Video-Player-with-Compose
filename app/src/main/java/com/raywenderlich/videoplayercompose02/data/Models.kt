@@ -28,5 +28,4 @@ data class Short(
 data class Channel(
     val channelName: String = "",
     val channelAvatar: String = "",
-//    val subscribers: String = ""
 )
