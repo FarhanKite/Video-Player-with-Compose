@@ -18,13 +18,11 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // ✅ App comes to foreground - recreate player with fresh surface
     override fun onResume() {
         super.onResume()
         VideoPlayerManager.onAppForeground(this)
     }
 
-    // ✅ App goes to background - save state and release player
     override fun onPause() {
         super.onPause()
         VideoPlayerManager.onAppBackground()
