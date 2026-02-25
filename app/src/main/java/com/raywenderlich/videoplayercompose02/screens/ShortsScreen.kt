@@ -102,7 +102,6 @@ fun ShortsScreen(initialShortId: String? = null) {
             pageCount = { shorts.size }
         )
 
-        // Play video when page changes
         LaunchedEffect(pagerState.currentPage, pagerState.settledPage) {
             val currentShort = shorts[pagerState.currentPage]
             VideoPlayerManager.playVideo(currentShort.videoUrl, autoPlay = true)
@@ -125,21 +124,33 @@ fun ShortsScreen(initialShortId: String? = null) {
 @Composable
 fun ShortItem(short: Short, isCurrentPage: Boolean) {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     var playerView by remember { mutableStateOf<PlayerView?>(null) }
+    var lifecycleState by remember { mutableStateOf(Lifecycle.State.RESUMED) }
 
-    // Detach player when not current page
-    LaunchedEffect(isCurrentPage) {
-        if (!isCurrentPage) {
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            lifecycleState = when (event) {
+                Lifecycle.Event.ON_RESUME -> Lifecycle.State.RESUMED
+                Lifecycle.Event.ON_PAUSE -> Lifecycle.State.STARTED
+                else -> lifecycleState
+            }
+        }
+
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
             playerView?.player = null
-        } else {
-            playerView?.player = VideoPlayerManager.getPlayer(context)
+            playerView = null
         }
     }
 
-    DisposableEffect(Unit) {
-        onDispose {
+    LaunchedEffect(isCurrentPage, lifecycleState) {
+        if (!isCurrentPage) {
             playerView?.player = null
-            playerView = null
+        } else if (lifecycleState == Lifecycle.State.RESUMED) {
+            playerView?.player = VideoPlayerManager.getPlayer(context)
         }
     }
 
@@ -165,9 +176,11 @@ fun ShortItem(short: Short, isCurrentPage: Boolean) {
                 }
             },
             update = { view ->
-                if (isCurrentPage && view.player == null) {
-                    view.player = VideoPlayerManager.getPlayer(context)
-                } else if (!isCurrentPage && view.player != null) {
+                if (isCurrentPage && lifecycleState == Lifecycle.State.RESUMED) {
+                    if (view.player == null) {
+                        view.player = VideoPlayerManager.getPlayer(context)
+                    }
+                } else if (!isCurrentPage) {
                     view.player = null
                 }
             },

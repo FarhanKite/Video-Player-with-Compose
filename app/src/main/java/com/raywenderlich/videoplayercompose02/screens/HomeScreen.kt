@@ -221,13 +221,11 @@ fun VideoItem(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(16f / 9f)
-                .clip(RoundedCornerShape(8.dp))
         ) {
             if (isAutoPlaying) {
                 AndroidView(
@@ -261,6 +259,7 @@ fun VideoItem(
         Spacer(modifier = Modifier.height(8.dp))
 
         Row(modifier = Modifier.fillMaxWidth()) {
+            Spacer(modifier = Modifier.width(8.dp))
             AsyncImage(
                 model = video.channelAvatar,
                 contentDescription = video.channelName,

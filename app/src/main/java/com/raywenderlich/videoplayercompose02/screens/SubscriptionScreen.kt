@@ -264,15 +264,14 @@ fun VideoItemSubscription(video: Video, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(8.dp)
+            .padding(bottom = 8.dp)
     ) {
         AsyncImage(
             model = video.thumbnailUrl,
             contentDescription = video.title,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp)
-                .clip(RoundedCornerShape(8.dp)),
+                .height(200.dp),
             contentScale = ContentScale.Crop
         )
 
@@ -281,6 +280,7 @@ fun VideoItemSubscription(video: Video, onClick: () -> Unit) {
         Row(
 
         ) {
+            Spacer(modifier = Modifier.width(8.dp))
             AsyncImage(
                 model = video.channelAvatar,
                 contentDescription = video.title,
