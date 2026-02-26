@@ -52,7 +52,6 @@ class SubscriptionViewModel(
             }
         }
 
-        // observing both combinely ... all channels and all videos
         viewModelScope.launch {
             combine(_allChannels, _allVideos) { channels, videos ->
                 Pair(channels, videos)

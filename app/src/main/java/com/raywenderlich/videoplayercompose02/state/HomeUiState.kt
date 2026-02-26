@@ -7,5 +7,6 @@ data class HomeUiState(
     val homeItems: List<HomeItem> = emptyList(),
     val isLoading: Boolean = true,
     val selectedVideo: Video? = null,
-    val autoPlayVideoId: String? = null
+    val autoPlayVideoId: String? = null,
+    val category: String = "All"
 )

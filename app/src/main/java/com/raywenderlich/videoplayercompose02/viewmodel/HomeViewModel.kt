@@ -1,6 +1,7 @@
 package com.raywenderlich.videoplayercompose02.viewmodel
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.raywenderlich.videoplayercompose02.data.Channel
@@ -31,6 +32,9 @@ class HomeViewModel(
     private val _videos = MutableStateFlow<List<Video>>(emptyList())
     private val _shorts = MutableStateFlow<List<Short>>(emptyList())
 
+    private val _category = MutableStateFlow("All")
+    val category: StateFlow<String> = _category
+
     private var autoPlayJob: Job? = null
 
     init {
@@ -60,9 +64,29 @@ class HomeViewModel(
 
         viewModelScope.launch {
             try {
-                repository.observeVideos().collect { videos ->
-                    _videos.value = videos
+//                repository.observeVideos().collect { videos ->
+//                    val categoryVideos = if (_category.value == "All") {
+//                        videos
+//                    } else {
+//                        videos.filter { it.category == _category.value }
+//                    }
+//                    _videos.value = categoryVideos
+//                }
+                combine(
+                    repository.observeVideos(),
+                    _category
+                ) { videos, category ->
+
+                    if (category == "All") {
+                        videos
+                    } else {
+                        videos.filter { it.category == category }
+                    }
+
+                }.collect { filteredVideos ->
+                    _videos.value = filteredVideos
                 }
+
             } catch (e: Exception) {
                 e.printStackTrace()
                 _uiState.update { it.copy(isLoading = false) }
@@ -80,6 +104,11 @@ class HomeViewModel(
         }
     }
 
+    fun changeCategory(newCategory: String) {
+        _category.value = newCategory
+        Log.d("changeCategory", "I am inside")
+    }
+
     fun onScrollChanged(isScrolling: Boolean, mostVisibleVideoId: String?) {
         if (isScrolling) {
             autoPlayJob?.cancel()
@@ -94,7 +123,7 @@ class HomeViewModel(
         autoPlayJob?.cancel()
         autoPlayJob = viewModelScope.launch {
             delay(500)
-            // Re-check conditions after delay
+            // re check conditions after delay
             if (_uiState.value.selectedVideo != null) return@launch
             val video = _videos.value.find { it.id == videoId } ?: return@launch
             _uiState.update { it.copy(autoPlayVideoId = videoId) }

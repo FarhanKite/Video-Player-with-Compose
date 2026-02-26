@@ -16,45 +16,26 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.media3.common.Player
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import com.raywenderlich.videoplayercompose02.data.Short
 import com.raywenderlich.videoplayercompose02.player.VideoPlayerManager
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
+import com.raywenderlich.videoplayercompose02.viewmodel.ShortsViewModel
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ShortsScreen(initialShortId: String? = null) {
-    var shorts by remember { mutableStateOf<List<Short>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(true) }
+fun ShortsScreen(
+    initialShortId: String? = null,
+    viewModel: ShortsViewModel = viewModel()
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    LaunchedEffect(Unit) {
-        val database = FirebaseDatabase.getInstance()
-        val shortsRef = database.getReference("shorts")
-
-        shortsRef.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val shortList = mutableListOf<Short>()
-                for (shortSnapshot in snapshot.children) {
-                    val short = shortSnapshot.getValue(Short::class.java)
-                    if (short != null) {
-                        shortList.add(short)
-                    }
-                }
-                shorts = shortList
-                isLoading = false
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                isLoading = false
-            }
-        })
+    LaunchedEffect(initialShortId) {
+        viewModel.setInitialShortId(initialShortId)
     }
 
     DisposableEffect(lifecycleOwner) {
@@ -74,49 +55,53 @@ fun ShortsScreen(initialShortId: String? = null) {
         }
     }
 
-    if (isLoading) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator()
-        }
-    } else if (shorts.isEmpty()) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text("No shorts available")
-        }
-    } else {
-        val initialPage = remember(initialShortId, shorts) {
-            if (initialShortId != null) {
-                shorts.indexOfFirst { it.id == initialShortId }.takeIf { it != -1 } ?: 0
-            } else {
-                0
+    when {
+        uiState.isLoading -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
             }
         }
-
-        val pagerState = rememberPagerState(
-            initialPage = initialPage,
-            pageCount = { shorts.size }
-        )
-
-        LaunchedEffect(pagerState.currentPage, pagerState.settledPage) {
-            val currentShort = shorts[pagerState.currentPage]
-            VideoPlayerManager.playVideo(currentShort.videoUrl, autoPlay = true)
-            VideoPlayerManager.setRepeatMode(true)
+        uiState.error != null -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("Error: ${uiState.error}")
+            }
         }
-
-        VerticalPager(
-            state = pagerState,
-            modifier = Modifier.fillMaxSize()
-        ) { page ->
-            val isCurrentPage = page == pagerState.currentPage
-            ShortItem(
-                short = shorts[page],
-                isCurrentPage = isCurrentPage
+        uiState.shorts.isEmpty() -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("No shorts available")
+            }
+        }
+        else -> {
+            val pagerState = rememberPagerState(
+                initialPage = uiState.initialPageIndex,
+                pageCount = { uiState.shorts.size }
             )
+
+            LaunchedEffect(pagerState.currentPage, pagerState.settledPage) {
+                val currentShort = uiState.shorts[pagerState.currentPage]
+                VideoPlayerManager.playVideo(currentShort.videoUrl, autoPlay = true)
+                VideoPlayerManager.setRepeatMode(true)
+            }
+
+            VerticalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize()
+            ) { page ->
+                val isCurrentPage = page == pagerState.currentPage
+                ShortItem(
+                    short = uiState.shorts[page],
+                    isCurrentPage = isCurrentPage
+                )
+            }
         }
     }
 }

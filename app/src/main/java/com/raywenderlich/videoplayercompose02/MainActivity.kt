@@ -12,7 +12,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             VideoPlayerCompose02Theme {
-                // Your navigation here
                 SimpleYouTubeApp()
             }
         }

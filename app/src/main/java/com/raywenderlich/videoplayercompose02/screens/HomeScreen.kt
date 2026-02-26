@@ -1,9 +1,11 @@
 package com.raywenderlich.videoplayercompose02.screens
 
 import android.view.LayoutInflater
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -19,6 +21,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
@@ -44,8 +47,12 @@ fun HomeScreen(
     viewModel: HomeViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val category by viewModel.category.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val listState = rememberLazyListState()
+
+//    var selected by remember { mutableStateOf("All") }
+    val categories = listOf("All", "Music", "Gaming", "News", "Sports", "Movies", "Education")
 
     DisposableEffect(Unit) {
         onDispose { viewModel.onScreenDispose() }
@@ -73,6 +80,16 @@ fun HomeScreen(
             text = "Home",
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(16.dp)
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        CategorySection(
+            categories = categories,
+            selectedCategory = category,
+            onCategorySelected = { newCategory ->
+                viewModel.changeCategory(newCategory)
+            }
         )
 
         if (uiState.isLoading) {
@@ -121,6 +138,37 @@ fun HomeScreen(
             video = video,
             onDismiss = { viewModel.onVideoDismissed() }
         )
+    }
+}
+
+@Composable
+fun CategorySection(
+    categories: List<String>,
+    selectedCategory: String,
+    onCategorySelected: (String) -> Unit
+) {
+    LazyRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 8.dp, start = 8.dp, end = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(categories) { category ->
+            val isSelected = category == selectedCategory
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(if (isSelected) MaterialTheme.colorScheme.primary else Color.LightGray)
+                    .clickable { onCategorySelected(category) }
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                Text(
+                    text = category,
+                    color = if (isSelected) Color.White else Color.Black,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        }
     }
 }
 
@@ -204,65 +252,6 @@ fun VideoItem(
                             isSubscribed = !isSubscribed
                             showMenu = false
                         }
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun VideoPlayerDialog(video: Video, onDismiss: () -> Unit) {
-    val context = LocalContext.current
-
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
-        ) {
-            Column(modifier = Modifier.fillMaxSize()) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = video.title,
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.weight(1f)
-                    )
-                    IconButton(onClick = onDismiss) {
-                        Icon(Icons.Filled.Close, "Close")
-                    }
-                }
-
-                AndroidView(
-                    factory = { ctx ->
-                        PlayerView(ctx).apply {
-                            useController = true
-                            player = VideoPlayerManager.getPlayer(ctx)
-                        }
-                    },
-                    update = { playerView ->
-                        val version = VideoPlayerManager.playerVersion.value
-                        playerView.player = VideoPlayerManager.getPlayer(context)
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(16f / 9f)
-                )
-
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(text = video.channelName, style = MaterialTheme.typography.titleSmall)
-                    Text(
-                        text = "${video.views} • ${video.uploadTime}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
